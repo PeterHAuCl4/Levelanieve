@@ -6,8 +6,8 @@
 #include <math.h>
 
 QString archivoX , archivoY;
-double lesarchivoX = 0, lesarchivoY = 0 , maxX = 0, maxY = 0;
-
+double lesarchivoX = 0, lesarchivoY = 0 , maxX = 0, maxY = 0; int n;
+QVector<double> finish, X;
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -109,8 +109,8 @@ void MainWindow::on_Solver_clicked()
 void MainWindow::on_Ecu_clicked(){
 
     bool ok;
-       int n = ui->Grado->text().toInt(&ok,10) , i = 0 , j = 0;
-       double faoo = ui->dataFa0->text().toDouble(&ok) , aux = 0 , sum_x = 0, sum_xy = 0 , inv , suma;
+       n = ui->Grado->text().toInt(&ok,10); int i = 0 , j = 0;
+       double faoo = ui->dataFa0->text().toDouble(&ok) , aux = 0 , sum_x = 0, sum_xy = 0 , inv , suma, supaux = 0, ya;
        QVector<double> x , y , extra, solucion(0), x_vector(0);
        QString archivo;
        QVector<QString> Complete , Y;
@@ -219,7 +219,23 @@ void MainWindow::on_Ecu_clicked(){
         printt+= " + ";
         }
         }
+        //Obtener nuevos valores
+        aux = 0;
+        ya = ui->valEcs->text().toDouble(&ok);
+
+                for(j = 0; j <= n; ++j){
+                    if(j != 0){
+                    aux+=x_vector[j]*pow(ya,j);
+                    }else{
+                    aux+=x_vector[j];
+                    }
+                }
+            ui->output2->setText(QString::number(aux));
         ui->output->setText(printt);
+        for(int i = 0; i < n; i++)
+            finish << x_vector[i];
+        for(int i = 0; i < lim; ++i)
+            X << x[i];
 }
 QVector<double> MainWindow::sustitucionAtras(QVector<QVector<double>> A, QVector<double> B, int n, QVector<double> C) {
  double suma;
@@ -245,19 +261,6 @@ QVector<double> MainWindow::eliminacionGauss(QVector<QVector<double>> A, QVector
  }
  }
  return B;
-}
-QVector<QVector<double>> MainWindow::eliminacionGauss2(QVector<QVector<double>> A, QVector<double> B, int n) {
- double inv;
- for (int k = 0; k < n; k++) {
- for (int i = k + 1; i < n; i++) {
- inv = A[i][k] / A[k][k];
- for (int j = k; j < n; j++) {
- A[i][j] = A[i][j] - inv*A[k][j];
- }
- B[i] = B[i] - inv*B[k];
- }
- }
- return A;
 }
 QVector<double> MainWindow::toFloatVector(QVector<QString> &aVector){
     QVector<double> vector;
@@ -310,4 +313,22 @@ void MainWindow::updateValues(int lim, QVector<double> x , QVector<double> y){
         auxLess = lesarchivoY;
     }
     }
+}
+
+void MainWindow::on_pushButton_clicked()
+{
+ double auux = 0 , aux = 0;
+ int lim = finish.length();
+ for(int i = 0; i < lim; ++i){
+     for(int j = 0; j <= n; ++j){
+         if(j != 0){
+         aux+=finish[j]*pow(X[i],j);
+         }else{
+         aux+=finish[j];
+         }
+     }
+     auux+=aux;
+     aux = 0;
+ }
+ ui->output2->setText(QString::number(auux));
 }

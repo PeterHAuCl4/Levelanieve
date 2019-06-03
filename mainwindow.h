@@ -24,7 +24,10 @@ private slots:
     void updateValues(int, QVector<double>, QVector<double>);
     void on_Ecu_clicked();
     QVector<double> eliminacionGauss(QVector<QVector<double>> A, QVector<double> B, int n);
+    QVector<QVector<double>> eliminacionGauss2(QVector<QVector<double>> A, QVector<double> B, int n);
     QVector<double> sustitucionAtras(QVector<QVector<double>> A, QVector<double> B, int n, QVector<double> C);
+
+    void on_pushButton_clicked();
 
 private:
     Ui::MainWindow *ui;
