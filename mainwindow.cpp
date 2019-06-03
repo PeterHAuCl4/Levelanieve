@@ -5,14 +5,55 @@
 #include <QMessageBox>
 #include <math.h>
 
-QString sX , sY;
-double lessX = 0, lessY = 0 , maxX = 0, maxY = 0;
+QString archivoX , archivoY;
+double lesarchivoX = 0, lesarchivoY = 0 , maxX = 0, maxY = 0;
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    QCPGraph *graph2 = ui->customPlot->addGraph();
+    graph2->setScatterStyle(QCPScatterStyle((QCPScatterStyle::ScatterShape)(rand()%20+1)));
+    graph2->setPen(QPen(QColor(80,250,123)));
+    // create graph and assign data to it:
+    QCPGraph *graph1 = ui->customPlot->addGraph();
+    graph1->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, QPen(QColor(139,233,253), 1.5), QBrush(Qt::black), 5));
+    graph1->setPen(QPen(QColor(200,240,17)));
+
+    ui->customPlot->xAxis->setLabel("x");
+    ui->customPlot->yAxis->setLabel("Fa0/ra");
+    ui->customPlot->xAxis->setBasePen(QPen(QColor(255,85,85)));
+    ui->customPlot->yAxis->setBasePen(QPen(QColor(255,85,85)));
+    ui->customPlot->xAxis->setTickPen(QPen(QColor(255,85,85)));
+    ui->customPlot->yAxis->setTickPen(QPen(QColor(255,85,85)));
+    ui->customPlot->xAxis->setSubTickPen(QPen(QColor(255,85,85)));
+    ui->customPlot->yAxis->setSubTickPen(QPen(QColor(255,85,85)));
+    ui->customPlot->xAxis->setTickLabelColor(QColor(255,85,85));
+    ui->customPlot->yAxis->setTickLabelColor(QColor(255,85,85));
+    ui->customPlot->xAxis->grid()->setPen(QPen(QColor(140, 140, 140), 1, Qt::DotLine));
+    ui->customPlot->yAxis->grid()->setPen(QPen(QColor(140, 140, 140), 1, Qt::DotLine));
+    ui->customPlot->xAxis->grid()->setSubGridPen(QPen(QColor(80, 80, 80), 1, Qt::DotLine));
+    ui->customPlot->yAxis->grid()->setSubGridPen(QPen(QColor(80, 80, 80), 1, Qt::DotLine));
+    ui->customPlot->xAxis->grid()->setSubGridVisible(true);
+    ui->customPlot->yAxis->grid()->setSubGridVisible(true);
+    ui->customPlot->xAxis->grid()->setZeroLinePen(Qt::NoPen);
+    ui->customPlot->yAxis->grid()->setZeroLinePen(Qt::NoPen);
+    ui->customPlot->xAxis->setUpperEnding(QCPLineEnding::esSpikeArrow);
+    ui->customPlot->yAxis->setUpperEnding(QCPLineEnding::esSpikeArrow);
+    QLinearGradient plotGradient;
+    plotGradient.setStart(0, 0);
+    plotGradient.setFinalStop(0, 350);
+    plotGradient.setColorAt(0, QColor(60, 65, 90));
+    plotGradient.setColorAt(1, QColor(60, 80, 90));
+    ui->customPlot->setBackground(plotGradient);
+    QLinearGradient axisRectGradient;
+    axisRectGradient.setStart(0, 0);
+    axisRectGradient.setFinalStop(0, 350);
+    axisRectGradient.setColorAt(0, QColor(58, 71, 90));
+    axisRectGradient.setColorAt(1, QColor(68, 71, 90));
+    ui->customPlot->axisRect()->setBackground(axisRectGradient);
 //    MainWindow::makePlot();
 }
 
@@ -26,10 +67,10 @@ void MainWindow::on_Solver_clicked()
     bool ok;
     int i = 0 , lim = 0;
     double faoo = ui->dataFa0->text().toDouble(&ok);
-    QVector<double> todo, x , y , y1;
+    QVector<double> ever, x , y , extra;
     QString archivo;
-    QVector<QString> fagocitos , Y;
-    QFile file(sX) , fileY(sY);
+    QVector<QString> Complete , Y;
+    QFile file(archivoX) , fileY(archivoY);
 
     if(!file.open(QIODevice::ReadOnly))
         QMessageBox::information(0,"Info",file.errorString());
@@ -37,9 +78,9 @@ void MainWindow::on_Solver_clicked()
 
     while(!in.atEnd()){
         archivo = in.readLine();
-        fagocitos += archivo;
+        Complete += archivo;
     }
-    x = MainWindow::toFloatVector(fagocitos);
+    x = MainWindow::toFloatVector(Complete);
 
     if(!fileY.open(QIODevice::ReadOnly))
         QMessageBox::information(0,"Info",file.errorString());
@@ -58,60 +99,22 @@ void MainWindow::on_Solver_clicked()
     updateValues(lim, x, y);
 
     // create graph and assign data to it:
-    QCPGraph *graph2 = ui->customPlot->addGraph();
-    graph2->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, QPen(Qt::black, 1.5), QBrush(Qt::white), 9));
-    graph2->setPen(QPen(QColor(0,191,17)));
     ui->customPlot->graph(0)->setData(x, y);
-//    QCPGraph *graph1 = ui->customPlot->addGraph();
-//    graph1->setData(x, y1);
-//    graph1->setPen(QPen(QColor(255, 243, 0)));
-    // give the axes some labels:
-    ui->customPlot->xAxis->setLabel("x");
-    ui->customPlot->yAxis->setLabel("y");
-    ui->customPlot->xAxis->setBasePen(QPen(Qt::white, 1));
-    ui->customPlot->yAxis->setBasePen(QPen(Qt::white, 1));
-    ui->customPlot->xAxis->setTickPen(QPen(Qt::white, 1));
-    ui->customPlot->yAxis->setTickPen(QPen(Qt::white, 1));
-    ui->customPlot->xAxis->setSubTickPen(QPen(Qt::white, 1));
-    ui->customPlot->yAxis->setSubTickPen(QPen(Qt::white, 1));
-    ui->customPlot->xAxis->setTickLabelColor(Qt::white);
-    ui->customPlot->yAxis->setTickLabelColor(Qt::white);
-    ui->customPlot->xAxis->grid()->setPen(QPen(QColor(140, 140, 140), 1, Qt::DotLine));
-    ui->customPlot->yAxis->grid()->setPen(QPen(QColor(140, 140, 140), 1, Qt::DotLine));
-    ui->customPlot->xAxis->grid()->setSubGridPen(QPen(QColor(80, 80, 80), 1, Qt::DotLine));
-    ui->customPlot->yAxis->grid()->setSubGridPen(QPen(QColor(80, 80, 80), 1, Qt::DotLine));
-    ui->customPlot->xAxis->grid()->setSubGridVisible(true);
-    ui->customPlot->yAxis->grid()->setSubGridVisible(true);
-    ui->customPlot->xAxis->grid()->setZeroLinePen(Qt::NoPen);
-    ui->customPlot->yAxis->grid()->setZeroLinePen(Qt::NoPen);
-    ui->customPlot->xAxis->setUpperEnding(QCPLineEnding::esSpikeArrow);
-    ui->customPlot->yAxis->setUpperEnding(QCPLineEnding::esSpikeArrow);
-    QLinearGradient plotGradient;
-    plotGradient.setStart(0, 0);
-    plotGradient.setFinalStop(0, 350);
-    plotGradient.setColorAt(0, QColor(80, 80, 80));
-    plotGradient.setColorAt(1, QColor(50, 50, 50));
-    ui->customPlot->setBackground(plotGradient);
-    QLinearGradient axisRectGradient;
-    axisRectGradient.setStart(0, 0);
-    axisRectGradient.setFinalStop(0, 350);
-    axisRectGradient.setColorAt(0, QColor(80, 80, 80));
-    axisRectGradient.setColorAt(1, QColor(30, 30, 30));
-    ui->customPlot->axisRect()->setBackground(axisRectGradient);
+
     // set axes ranges, so we see all data:
-    ui->customPlot->xAxis->setRange(lessX, maxX);
-    ui->customPlot->yAxis->setRange(lessY, maxY);
+    ui->customPlot->xAxis->setRange(lesarchivoX, maxX);
+    ui->customPlot->yAxis->setRange(lesarchivoY, maxY);
     ui->customPlot->replot();
 }
 void MainWindow::on_Ecu_clicked(){
 
     bool ok;
-       int n = ui->Grado->text().toInt(&ok,10) , i = 0 , j = 0 , p = 0;
+       int n = ui->Grado->text().toInt(&ok,10) , i = 0 , j = 0;
        double faoo = ui->dataFa0->text().toDouble(&ok) , aux = 0 , sum_x = 0, sum_xy = 0 , inv , suma;
-       QVector<double> x , y , y1, solucion(0), x_vector(0);
+       QVector<double> x , y , extra, solucion(0), x_vector(0);
        QString archivo;
-       QVector<QString> fagocitos , Y;
-       QFile file(sX) , fileY(sY);
+       QVector<QString> Complete , Y;
+       QFile file(archivoX) , fileY(archivoY);
 
        if(!file.open(QIODevice::ReadOnly))
           QMessageBox::information(0,"Info",file.errorString());
@@ -119,9 +122,9 @@ void MainWindow::on_Ecu_clicked(){
 
        while(!in.atEnd()){
            archivo = in.readLine();
-           fagocitos += archivo;
+           Complete += archivo;
        }
-       x = MainWindow::toFloatVector(fagocitos);
+       x = MainWindow::toFloatVector(Complete);
 
        if(!fileY.open(QIODevice::ReadOnly))
            QMessageBox::information(0,"Info",file.errorString());
@@ -177,6 +180,8 @@ void MainWindow::on_Ecu_clicked(){
    solucion[i] = solucion[i] - inv*solucion[k];
    }
    }
+
+//Sustitución hacia atrás
    x_vector[tamano - 1] = solucion[tamano - 1] / ecuaciones[tamano - 1][tamano - 1];
    for (int i = tamano - 2; i >= 0; i--) {
    suma = 0;
@@ -194,51 +199,27 @@ void MainWindow::on_Ecu_clicked(){
                aux+=x_vector[j];
                }
            }
-           y1 << aux;
+           extra << aux;
            aux = 0;
        }
-        // create graph and assign data to it:
-        QCPGraph *graph1 = ui->customPlot->addGraph();
-        graph1->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssCircle, QPen(Qt::black, 1.5), QBrush(Qt::white), 9));
-        graph1->setPen(QPen(QColor(200,240,17)));
-        ui->customPlot->graph(1)->setData(x, y1);
+        ui->customPlot->graph(1)->setData(x, extra);
         // give the axes some labels:
-        ui->customPlot->xAxis->setLabel("x");
-        ui->customPlot->yAxis->setLabel("y");
-        ui->customPlot->xAxis->setBasePen(QPen(Qt::white, 1));
-        ui->customPlot->yAxis->setBasePen(QPen(Qt::white, 1));
-        ui->customPlot->xAxis->setTickPen(QPen(Qt::white, 1));
-        ui->customPlot->yAxis->setTickPen(QPen(Qt::white, 1));
-        ui->customPlot->xAxis->setSubTickPen(QPen(Qt::white, 1));
-        ui->customPlot->yAxis->setSubTickPen(QPen(Qt::white, 1));
-        ui->customPlot->xAxis->setTickLabelColor(Qt::white);
-        ui->customPlot->yAxis->setTickLabelColor(Qt::white);
-        ui->customPlot->xAxis->grid()->setPen(QPen(QColor(140, 140, 140), 1, Qt::DotLine));
-        ui->customPlot->yAxis->grid()->setPen(QPen(QColor(140, 140, 140), 1, Qt::DotLine));
-        ui->customPlot->xAxis->grid()->setSubGridPen(QPen(QColor(80, 80, 80), 1, Qt::DotLine));
-        ui->customPlot->yAxis->grid()->setSubGridPen(QPen(QColor(80, 80, 80), 1, Qt::DotLine));
-        ui->customPlot->xAxis->grid()->setSubGridVisible(true);
-        ui->customPlot->yAxis->grid()->setSubGridVisible(true);
-        ui->customPlot->xAxis->grid()->setZeroLinePen(Qt::NoPen);
-        ui->customPlot->yAxis->grid()->setZeroLinePen(Qt::NoPen);
-        ui->customPlot->xAxis->setUpperEnding(QCPLineEnding::esSpikeArrow);
-        ui->customPlot->yAxis->setUpperEnding(QCPLineEnding::esSpikeArrow);
-        QLinearGradient plotGradient;
-        plotGradient.setStart(0, 0);
-        plotGradient.setFinalStop(0, 350);
-        plotGradient.setColorAt(0, QColor(80, 80, 80));
-        plotGradient.setColorAt(1, QColor(50, 50, 50));
-        ui->customPlot->setBackground(plotGradient);
-        QLinearGradient axisRectGradient;
-        axisRectGradient.setStart(0, 0);
-        axisRectGradient.setFinalStop(0, 350);
-        axisRectGradient.setColorAt(0, QColor(80, 80, 80));
-        axisRectGradient.setColorAt(1, QColor(30, 30, 30));
-        ui->customPlot->axisRect()->setBackground(axisRectGradient);
-        // set axes ranges, so we see all data:
-        ui->customPlot->xAxis->setRange(lessX, maxX);
-        ui->customPlot->yAxis->setRange(lessY, maxY);
+            // set axes ranges, so we see all data:
+        ui->customPlot->xAxis->setRange(lesarchivoX, maxX);
+        ui->customPlot->yAxis->setRange(lesarchivoY, maxY);
         ui->customPlot->replot();
+        QString printt = "La ecuación del polinomio es f(x) = ";
+        for (int i = 0; i < tamano; i++) {
+        printt+= QString::number(x_vector[i]);
+        if (i != 0) {
+        printt+= "x^";
+        printt+= QString::number(i);
+        }
+        if (i != tamano - 1) {
+        printt+= " + ";
+        }
+        }
+        ui->output->setText(printt);
 }
 QVector<double> MainWindow::sustitucionAtras(QVector<QVector<double>> A, QVector<double> B, int n, QVector<double> C) {
  double suma;
@@ -291,13 +272,13 @@ QVector<double> MainWindow::toFloatVector(QVector<QString> &aVector){
 }
 void MainWindow::on_inDataY_clicked()
 {
-    sY =
+    archivoY =
             QFileDialog::getOpenFileName(this, "Open a file", "directoryToOpen",
                 "Text files (*.txt);;Images (*.png *.xpm *.jpg);;XML files (*.xml)");
 }
 void MainWindow::on_inDataX_clicked()
 {
-    sX =
+    archivoX =
             QFileDialog::getOpenFileName(this, "Open a file", "directoryToOpen",
                 "Text files (*.txt);;Images (*.png *.xpm *.jpg);;XML files (*.xml)");
 }
@@ -312,8 +293,8 @@ void MainWindow::updateValues(int lim, QVector<double> x , QVector<double> y){
         auxMax = maxX;
     }
     if(val < auxLess){
-        lessX = val;
-        auxLess = lessX;
+        lesarchivoX = val;
+        auxLess = lesarchivoX;
     }
     }
     //Inicia para Y
@@ -325,8 +306,8 @@ void MainWindow::updateValues(int lim, QVector<double> x , QVector<double> y){
         auxMax = maxY;
     }
     if(val < auxLess){
-        lessY = val;
-        auxLess = lessY;
+        lesarchivoY = val;
+        auxLess = lesarchivoY;
     }
     }
 }
